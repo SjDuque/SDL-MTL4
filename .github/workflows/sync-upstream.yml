@@ -1,0 +1,59 @@
+name: Sync Upstream SDL
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync main and newest release branch from libsdl-org/SDL
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+          git remote add upstream https://github.com/libsdl-org/SDL.git
+          git fetch upstream '+refs/heads/*:refs/remotes/upstream/*' --tags --prune
+
+          git push origin --tags
+
+          # Sync main
+          git checkout -B main origin/main
+          git merge upstream/main --no-edit
+          git push origin main
+
+          # Sync the newest upstream release-* branch (e.g. release-3.4.x, release-3.6.x)
+          latest_branch=$(
+            git for-each-ref --sort=-version:refname --format='%(refname:short)' 'refs/remotes/upstream/release-[0-9]*.x' \
+              | head -n 1 \
+              | sed 's|^upstream/||'
+          )
+          echo "Newest upstream release branch: $latest_branch"
+
+          if git show-ref --verify --quiet "refs/remotes/origin/$latest_branch"; then
+            git checkout -B "$latest_branch" "origin/$latest_branch"
+            git merge "upstream/$latest_branch" --no-edit
+            git push origin "$latest_branch"
+          else
+            git checkout -B "$latest_branch" "upstream/$latest_branch"
+            metal_commit=$(git log origin/main --grep="^gpu: Replaced Metal backend with Metal 4" -n 1 --format=%H)
+            git cherry-pick "$metal_commit"
+            git push -u origin "$latest_branch"
+          fi

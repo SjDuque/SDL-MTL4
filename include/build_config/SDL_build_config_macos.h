@@ -213,8 +213,8 @@
 #define SDL_VIDEO_RENDER_OGL 1
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 
-/* Metal only supported on 64-bit architectures with 10.11+ */
-#if TARGET_RT_64_BIT && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
+/* Metal 4 only supported on ARM architectures with 26.0+ */
+#if TARGET_CPU_ARM && (MAC_OS_X_VERSION_MAX_ALLOWED >= 260000)
 #define SDL_PLATFORM_SUPPORTS_METAL 1
 #endif
 
