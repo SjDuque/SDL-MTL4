@@ -584,7 +584,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     job.cmake_arguments.extend([
                         "-DCMAKE_SYSTEM_NAME=iOS",
                         "-DCMAKE_OSX_ARCHITECTURES=\"arm64\"",
-                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0",
+                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0",
                     ])
                 case SdlPlatform.Tvos:
                     if spec.xcode:
@@ -592,7 +592,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     job.cmake_arguments.extend([
                         "-DCMAKE_SYSTEM_NAME=tvOS",
                         "-DCMAKE_OSX_ARCHITECTURES=\"arm64\"",
-                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0",
+                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0",
                     ])
         case SdlPlatform.MacOS:
             if spec.apple_framework:
@@ -601,7 +601,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.test_pkg_config = False
                 job.cmake_arguments.extend((
                     "'-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64'",
-                    "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13",
+                    "-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0",
                     "-DSDL_FRAMEWORK=ON",
                 ))
                 job.shared_lib = SharedLibType.FRAMEWORK
@@ -609,7 +609,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.clang_tidy = True
                 job.cmake_arguments.extend((
                     "-DCMAKE_OSX_ARCHITECTURES=arm64",
-                    "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13",
+                    "-DCMAKE_OSX_DEPLOYMENT_TARGET=26.0",
                     "-DCLANG_TIDY_BINARY=$(brew --prefix llvm)/bin/clang-tidy",
                 ))
                 job.brew_packages.extend((
