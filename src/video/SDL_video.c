@@ -3849,6 +3849,12 @@ bool SDL_SetWindowOpacity(SDL_Window *window, float opacity)
         opacity = 1.0f;
     }
 
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        // Fullscreen windows are always opaque, this will be applied when the window leaves fullscreen
+        window->opacity = opacity;
+        return true;
+    }
+
     result = _this->SetWindowOpacity(_this, window, opacity);
     if (result) {
         window->opacity = opacity;
@@ -4298,6 +4304,19 @@ void SDL_OnWindowHidden(SDL_Window *window)
     SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_LEAVE, false);
 }
 
+void SDL_OnWindowFullscreenChanged(SDL_Window *window)
+{
+    if (_this->SetWindowOpacity && window->opacity < 1.0f) {
+        float opacity;
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            opacity = 1.0f;
+        } else {
+            opacity = window->opacity;
+        }
+        _this->SetWindowOpacity(_this, window, opacity);
+    }
+}
+
 void SDL_OnWindowDisplayChanged(SDL_Window *window)
 {
     // Don't run this if a fullscreen change was made in an event watcher callback in response to a display changed event.
@@ -4326,6 +4345,13 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
 
         if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
             SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, true);
+        }
+    }
+
+    if (!SDL_DriverSendsHDRChanges(_this)) {
+        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+        if (display) {
+            SDL_SetWindowHDRProperties(window, &display->HDR, true);
         }
     }
 
